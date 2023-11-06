@@ -1,0 +1,221 @@
+<html>
+  <head>
+    <title>Movie Recommendation</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #f4f5;
+        padding: 0 20px;
+      }
+
+      ::selection {
+        color: #fff;
+        background: #664aff;
+      }
+
+      .container {
+        max-width: 450px;
+        margin: 150px auto;
+      }
+
+      .container .searchInput {
+        background: #fff;
+        width: 100%;
+        border-radius: 5px;
+        position: relative;
+        box-shadow: 0px 1px 5px 3px rgba(0, 0, 0, 0.12);
+      }
+
+      .searchInput input {
+        height: 55px;
+        width: 100%;
+        outline: none;
+        border: none;
+        border-radius: 5px;
+        padding: 0 60px 0 20px;
+        font-size: 18px;
+        box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .searchInput.active input {
+        border-radius: 5px 5px 0 0;
+      }
+
+      .searchInput .resultBox {
+        padding: 0;
+        opacity: 0;
+        pointer-events: none;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+
+      .searchInput.active .resultBox {
+        padding: 10px 8px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .resultBox li {
+        list-style: none;
+        padding: 8px 12px;
+        display: none;
+        width: 100%;
+        cursor: default;
+        border-radius: 3px;
+      }
+
+      .searchInput.active .resultBox li {
+        display: block;
+      }
+      .resultBox li:hover {
+        background: #efefef;
+      }
+
+      .searchInput .icon {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        height: 55px;
+        width: 150px;
+        text-align: center;
+        line-height: 55px;
+        font-size: 10px;
+        color: #644bff;
+        cursor: pointer;
+      }
+      .recommend_movie {
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        gap: 10px;
+      }
+      .header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 50px;
+        font-size: 30px;
+      }
+      img {
+        width: 300px;
+        height: 300px;
+      }
+      .movie {
+        display: flex;
+        flex-direction: column;
+        font-size: 20px;
+        font-weight: bold;
+      }
+    </style>
+    <script>
+      var suggestions = [];
+    </script>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Movie Recommendation System</h1>
+    </div>
+    <div class="container">
+      <div class="searchInput">
+        <input type="text" placeholder="Enter movie name..." id="movie_name" />
+        <div class="resultBox">
+          <!-- here list are inserted from javascript -->
+        </div>
+        <div class="icon">
+          <input type="submit" id="submit_btn" value="Recommend" />
+        </div>
+      </div>
+    </div>
+    {% for title in titles %}
+    <script>
+      suggestions.push("{{title}}");
+    </script>
+    {% endfor %}
+    <div class="recommend_movie">
+      <div class="movie">
+        <p>{{movie_list.0}}</p>
+        <img src="{{movie_poster.0}}" />
+      </div>
+      <div class="movie">
+        <p>{{movie_list.1}}</p>
+        <img src="{{movie_poster.1}}" />
+      </div>
+      <div class="movie">
+        <p>{{movie_list.2}}</p>
+        <img src="{{movie_poster.2}}" />
+      </div>
+      <div class="movie">
+        <p>{{movie_list.3}}</p>
+        <img src="{{movie_poster.3}}" />
+      </div>
+      <div class="movie">
+        <p>{{movie_list.4}}</p>
+        <img src="{{movie_poster.4}}" />
+      </div>
+    </div>
+  </body>
+  <script>
+    const searchInput = document.querySelector(".searchInput");
+    const input = searchInput.querySelector("input");
+    const resultBox = searchInput.querySelector(".resultBox");
+    const icon = searchInput.querySelector(".icon");
+    let linkTag = searchInput.querySelector("a");
+    let webLink;
+
+    // if user press any key and release
+    input.onkeyup = (e) => {
+      let userData = e.target.value; //user enetered data
+      let emptyArray = [];
+      if (userData) {
+        emptyArray = suggestions.filter((data) => {
+          //filtering array value and user characters to lowercase and return only those words which are start with user enetered chars
+          return data
+            .toLocaleLowerCase()
+            .startsWith(userData.toLocaleLowerCase());
+        });
+        emptyArray = emptyArray.map((data) => {
+          // passing return data inside li tag
+          return (data = "<li>" + data + "</li>");
+        });
+        searchInput.classList.add("active"); //show autocomplete box
+        showSuggestions(emptyArray);
+        let allList = resultBox.querySelectorAll("li");
+        for (let i = 0; i < allList.length; i++) {
+          //adding onclick attribute in all li tag
+          allList[i].setAttribute("onclick", "selectMovie(this.textContent)");
+        }
+      } else {
+        searchInput.classList.remove("active"); //hide autocomplete box
+      }
+    };
+
+    function selectMovie(moviename) {
+      document.getElementById("movie_name").value = moviename;
+      searchInput.classList.remove("active"); //hide autocomplete box
+    }
+
+    function showSuggestions(list) {
+      let listData;
+      if (!list.length) {
+        userValue = inputBox.value;
+        listData = "<li>" + userValue + "</li>";
+      } else {
+        listData = list.join("");
+      }
+      resultBox.innerHTML = listData;
+    }
+    function sendData() {
+      var movie_name = document.getElementById("movie_name").value;
+
+      var url = "/temp/?movie_select=" + encodeURIComponent(movie_name);
+
+      window.location.href = url;
+    }
+    document.getElementById("submit_btn").addEventListener("click", sendData);
+  </script>
+</html>
